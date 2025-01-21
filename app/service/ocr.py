@@ -23,7 +23,7 @@ ocr_instances = [PaddleOCR(det_model_dir = det_dir,
                     rec_model_dir = rec_dir,
                     cls_model_dir = cls_dir,
                     rec_char_dict_path = rec_dict_dir,
-                    use_angle_cls=True, lang="ch", use_gpu=False) for _ in range(5)]
+                    use_angle_cls=True, lang="ch", use_gpu=True) for _ in range(5)]
 locks = [threading.Lock() for _ in range(5)]
 
 

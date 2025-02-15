@@ -101,7 +101,7 @@ def call_taxi(img_path, request_idx):
     # print(search_key)
     req = []
     for i in search_key:
-        if  ("滴滴" in search_key[i]['content'] or "特惠" in search_key[i]['content']) and ("滴滴旗下品牌" not in search_key[i]['content']):
+        if  ("滴滴" in search_key[i]['content'] or "特惠" in search_key[i]['content'] or "六座商务" in search_key[i]['content']) and ("滴滴旗下品牌" not in search_key[i]['content']):
             print('===================')
             print(search_key[i])
             ans = {}

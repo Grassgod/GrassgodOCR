@@ -110,5 +110,5 @@ def ocr_handler(img_path,current_index):
         lock.release()
  
 # if __name__ == "__main__":
-#     img_path = r"/Users/grassgod/Documents/Code/GrassgodOCR/app/img/WechatIMG66.jpg"
+#     img_path = r"/Users/grassgod/Desktop/打车截图/微信图片_20250124144041.jpg"
 #     print(ocr_handler(img_path,1))

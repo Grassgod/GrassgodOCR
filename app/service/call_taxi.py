@@ -6,9 +6,11 @@ import json
 
 
 def extract_money(content):
-    match = re.search(r'(\d+(\.\d+)?)元', content)
+    match = re.search(r'((\d{1,3}(,\d{3})*)|(\d+))(\.\d+)?元', content)
     if match:
-        return match.group(1)
+        # 提取匹配的完整金额字符串，并移除千位分隔符
+        amount_str = match.group(0).replace(',', '').replace('元', '')
+        return amount_str
     return None
 
 def extract_discount(content):
@@ -88,8 +90,7 @@ def call_taxi(img_path, request_idx):
         y_min = min(y)
         y_max = max(y)
         # 确定x和y的最大最小
-        # print(x_min, x_max, y_min, y_max)
-        # print(content)
+        print(content,x_min, x_max, y_min, y_max)
         search_key[count] = {
             'x_min': x_min,
             'x_max': x_max,
@@ -101,8 +102,8 @@ def call_taxi(img_path, request_idx):
     req = []
     for i in search_key:
         if  ("滴滴" in search_key[i]['content'] or "特惠" in search_key[i]['content']) and ("滴滴旗下品牌" not in search_key[i]['content']):
-            # print('===================')
-            # print(search_key[i])
+            print('===================')
+            print(search_key[i])
             ans = {}
             ans["carType"] = search_key[i]['content']
             base = search_key[i]
@@ -111,19 +112,20 @@ def call_taxi(img_path, request_idx):
                 if compare['x_min']>base['x_max']:
                     # 判断compare和base的y轴存在交叉
                     if compare['y_min']<base['y_max'] and compare['y_max']>base['y_min']:
-                        # print(j,search_key[j])
                         if '-' not in compare['content'] and '元' in compare['content']:
+                            print(j,search_key[j])
                             ans['price'] = extract_money(compare['content'])
                             min_dis = 100000
                             min_key = ''
                             for k in search_key:
                                 compare2 = search_key[k]
-                                if compare2['x_min']>base['x_max'] and compare2['y_min']-compare['y_max']>=0 and compare2['y_min']-compare['y_max']<min_dis:
+                                if compare2['x_min']>base['x_max'] and compare2['y_min']-compare['y_max']>=-20 and compare2['y_min']-compare['y_max']<min_dis:
                                     min_dis = compare2['y_min']-compare['y_max']
                                     min_key = k
-                                
+                                    print('更新', compare2)
                             if min_key != '' and '-' in search_key[min_key]['content']:
                                 ans['discount'] = extract_discount(search_key[min_key]['content'])
+                            print(search_key[min_key]['content'])
             req.append(ans)
 
     req_data['cars'] = req                 

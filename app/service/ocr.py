@@ -15,14 +15,14 @@ from flask import jsonify
 det_dir = '../model/v_0.1/det_infer/'
 rec_dir = '../model/v_0.1/rec_infer/'
 cls_dir = '../model/v_0.1/cls_infer/'
-# rec_dict_dir = '../model/v_0.1/keys_v1.txt' 
+rec_dict_dir = '/home/ubuntu/algo/GrassgodOCR/app/model/v_0.1/keys_v1.txt' 
 
 
 
 ocr_instances = [PaddleOCR(det_model_dir = det_dir,
                     rec_model_dir = rec_dir,
                     cls_model_dir = cls_dir,
-                    # rec_char_dict_path = rec_dict_dir,
+                    rec_char_dict_path = rec_dict_dir,
                     use_angle_cls=True, lang="ch", use_gpu=True) for _ in range(5)]
 locks = [threading.Lock() for _ in range(5)]
 

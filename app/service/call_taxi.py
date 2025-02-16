@@ -62,9 +62,16 @@ def get_from_to(img_path):
 
 def call_taxi(img_path, request_idx):
 
+    
     req_data = {}
 
-    result = get_from_to(img_path)
+    result = {}
+
+    try:
+        result = get_from_to(img_path)
+    except Exception as e:
+        print(e)
+        return req_data
 
     req_data['from'] = result['出发地']
     req_data['to'] = result['目的地']

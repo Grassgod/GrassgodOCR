@@ -3,10 +3,14 @@ import re
 import os
 from openai import OpenAI
 import json
+import requests
+from io import BytesIO
+
+
 
 
 def extract_money(content):
-    match = re.search(r'((\d{1,3}(,\d{3})*)|(\d+))(\.\d+)?元', content)
+    match = re.search(r'((\d{1,3}(,\d{3})*)|(\d+))(\.\d+)?', content)
     if match:
         # 提取匹配的完整金额字符串，并移除千位分隔符
         amount_str = match.group(0).replace(',', '').replace('元', '')
@@ -14,7 +18,7 @@ def extract_money(content):
     return None
 
 def extract_discount(content):
-    match = re.search(r'-(\d+(\.\d+)?)元', content)
+    match = re.search(r'-(\d+(\.\d+)?)', content)
     if match:
         return match.group(1)
     return None
@@ -112,14 +116,20 @@ def call_taxi(img_path, request_idx):
             print('===================')
             print(search_key[i])
             ans = {}
-            ans["carType"] = search_key[i]['content']
+            if search_key[i]['content'] == '惠特惠快车':
+                ans["carType"] = '特惠快车'
+            else:
+                ans["carType"] = search_key[i]['content']
             base = search_key[i]
+            flag = 0
             for j in search_key:
                 compare = search_key[j]
                 if compare['x_min']>base['x_max']:
                     # 判断compare和base的y轴存在交叉
                     if compare['y_min']<base['y_max'] and compare['y_max']>base['y_min']:
-                        if '-' not in compare['content'] and '元' in compare['content']:
+                        # if '元' in compare['content']:
+                        if flag == 0:
+                            flag = 1
                             print(j,search_key[j])
                             ans['price'] = extract_money(compare['content'])
                             min_dis = 100000

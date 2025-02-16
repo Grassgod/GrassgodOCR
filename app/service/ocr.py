@@ -6,6 +6,11 @@ import cv2
 import numpy as np
 import threading
 from flask import jsonify
+import requests
+from io import BytesIO
+import numpy as np
+from PIL import Image
+from paddleocr import PaddleOCR
 # import numpy as np
  
 '''
@@ -15,8 +20,8 @@ from flask import jsonify
 det_dir = '../model/v_0.1/det_infer/'
 rec_dir = '../model/v_0.1/rec_infer/'
 cls_dir = '../model/v_0.1/cls_infer/'
-rec_dict_dir = '/root/algo/GrassgodOCR/app/model/v_0.1/keys_v1.txt' 
-
+# rec_dict_dir = '/Users/grassgod/Documents/Code/GrassgodOCR/app/model/v_0.1/keys_v1.txt' 
+rec_dict_dir = '/root/algo/GrassgodOCR/app/model/v_0.1/keys_v1.txt'
 
 
 ocr_instances = [PaddleOCR(det_model_dir = det_dir,
@@ -43,6 +48,27 @@ def postprocess_ocr_result(result):
             print('score : ', score)
         print('==========================================')
 
+# 初始化PaddleOCR对象
+ocr = PaddleOCR(use_angle_cls=True, lang='en')  # 根据需要设置语言
+
+def download_image(img_url):
+    """
+    从给定的URL下载图片并返回其二进制数据。
+    """
+    response = requests.get(img_url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to download image from {img_url}")
+    return response.content
+
+def convert_to_ndarray(image_data):
+    """
+    将图片的二进制数据转换为numpy数组。
+    """
+    img = Image.open(BytesIO(image_data))
+    img_array = np.array(img)
+    return img_array
+    
+
 def model_ocr(ocr, img):
     # paddleocr 目前支持的多语言语种可以通过修改lang参数进行切换
     # 例如`ch`, `en`, `fr`, `german`, `korean`, `japan`
@@ -50,9 +76,18 @@ def model_ocr(ocr, img):
     # 模型路径下必须包含model和params文件，目前开源的v3版本模型 已经是识别率很高的了
     # 还要更好的就要自己训练模型了。
 
-    # 识别图片文件
-    result = ocr.ocr(img, cls=True)
-
+    """
+    使用PaddleOCR对给定URL的图片进行OCR处理。
+    """
+    # 下载图片
+    image_data = download_image(img)
+    
+    # 将图片数据转换为numpy数组
+    img_array = convert_to_ndarray(image_data)
+    
+    # 使用PaddleOCR进行OCR处理
+    result = ocr.ocr(img_array, cls=True)
+    
     return result
  
  
@@ -88,7 +123,7 @@ def draw_ocr_result(img_path, result):
 
 
 def ocr_handler(img_path,current_index):
-    print(img_path, current_index)
+    # print(img_path, cusrrent_index)
     # img_file = None
     # with open(img_path, 'r') as f:
     #     img_file = f.readfile()

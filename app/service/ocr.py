@@ -15,7 +15,7 @@ from flask import jsonify
 det_dir = '../model/v_0.1/det_infer/'
 rec_dir = '../model/v_0.1/rec_infer/'
 cls_dir = '../model/v_0.1/cls_infer/'
-rec_dict_dir = '/home/ubuntu/algo/GrassgodOCR/app/model/v_0.1/keys_v1.txt' 
+rec_dict_dir = '/root/algo/GrassgodOCR/app/model/v_0.1/keys_v1.txt' 
 
 
 

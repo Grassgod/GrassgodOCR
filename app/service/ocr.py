@@ -24,12 +24,12 @@ cls_dir = '../model/v_0.1/cls_infer/'
 rec_dict_dir = '/root/algo/GrassgodOCR/app/model/v_0.1/keys_v1.txt'
 
 
-ocr_instances = [PaddleOCR(det_model_dir = det_dir,
-                    rec_model_dir = rec_dir,
-                    cls_model_dir = cls_dir,
-                    rec_char_dict_path = rec_dict_dir,
-                    use_angle_cls=True, lang="ch", use_gpu=True) for _ in range(5)]
-locks = [threading.Lock() for _ in range(5)]
+# ocr_instances = [PaddleOCR(det_model_dir = det_dir,
+#                     rec_model_dir = rec_dir,
+#                     cls_model_dir = cls_dir,
+#                     rec_char_dict_path = rec_dict_dir,
+#                     use_angle_cls=True, lang="ch", use_gpu=True) for _ in range(5)]
+# locks = [threading.Lock() for _ in range(5)]
 
 
  
@@ -129,20 +129,26 @@ def ocr_handler(img_path,current_index):
     #     img_file = f.readfile()
  
     # Get the index of the OCR instance to use
-    model_index = id(current_index) % len(ocr_instances)
-    ocr = ocr_instances[model_index]
+    # model_index = id(current_index) % len(ocr_instances)
+    # ocr = ocr_instances[model_index]
+    ocr = PaddleOCR(det_model_dir = det_dir,
+                    rec_model_dir = rec_dir,
+                    cls_model_dir = cls_dir,
+                    rec_char_dict_path = rec_dict_dir,
+                    use_angle_cls=True, lang="ch", use_gpu=True)
  
     # Acquire the lock for the OCR instance
-    lock = locks[model_index]
-    lock.acquire()
-    print("model_index", model_index)
+    # lock = locks[model_index]
+    # lock.acquire()
+    # print("model_index", model_index)
     try:
         result = model_ocr(ocr, img_path)
  
         return {'result': result}
-    finally:
+    except Exception as e:
+        print(e)
         # Release the lock after OCR processing is complete
-        lock.release()
+        # lock.release()
  
 # if __name__ == "__main__":
 #     img_path = r"/Users/grassgod/Desktop/打车截图/微信图片_20250124144041.jpg"

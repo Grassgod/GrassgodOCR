@@ -135,7 +135,7 @@ def ocr_handler(img_path,current_index):
                     rec_model_dir = rec_dir,
                     cls_model_dir = cls_dir,
                     rec_char_dict_path = rec_dict_dir,
-                    use_angle_cls=True, lang="ch", use_gpu=True)
+                    use_angle_cls=True, lang="ch", use_gpu=True,det_db_box_thresh = 0.3)
  
     # Acquire the lock for the OCR instance
     # lock = locks[model_index]

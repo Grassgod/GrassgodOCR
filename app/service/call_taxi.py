@@ -39,8 +39,8 @@ def get_from_to(img_path):
                         "type": "text",
                         "text": '''
                         你是一个信息提取员,请根据图片提取以下信息:
-                        1.出发地 
-                        2.目的地 
+                        1.出发地:出发地是一个具体地址，非省市区
+                        2.目的地:目的地是一个具体地址，非省市区
                         结果按照JSON输出,回答只包含一个JSON, 不带有任何解释信息.
                         这个JSON的标准格式为:{"出发地":"地址","目的地":"地址"}
                         请注意, 不要编造任何数据, 请严格按照图片上内容输出, 不需要任何解释信息
@@ -87,6 +87,7 @@ def call_taxi(img_path, request_idx):
         ocr_result = ocr_result['result'][0]
     except Exception as e:
         print(e)
+        print('ocr error')
         req_data['status'] = 'analysisError'
         return req_data
 
@@ -150,9 +151,10 @@ def call_taxi(img_path, request_idx):
                                         print('更新', compare2)
                                 if min_key != '' and '-' in search_key[min_key]['content']:
                                     ans['discount'] = extract_discount(search_key[min_key]['content'])
-                                print(search_key[min_key]['content'])
+                                    print(search_key[min_key]['content'])
                 req.append(ans)
     except Exception as e:
+        print('search error')
         print(e)
         req_data['status'] = 'unknownError'
         return req_data

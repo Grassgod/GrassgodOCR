@@ -78,8 +78,10 @@ def call_taxi(img_path, request_idx):
         req_data['status'] = 'modelError'
         return req_data
 
-    req_data['from'] = result['出发地']
-    req_data['to'] = result['目的地']
+    print(result)
+
+    req_data['from'] = result.get('出发地', '')
+    req_data['to'] = result.get('目的地','')
 
     try:
 

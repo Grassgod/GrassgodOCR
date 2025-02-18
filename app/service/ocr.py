@@ -21,7 +21,7 @@ det_dir = '../model/v_0.1/det_infer/'
 rec_dir = '../model/v_0.1/rec_infer/'
 cls_dir = '../model/v_0.1/cls_infer/'
 # rec_dict_dir = '/Users/grassgod/Documents/Code/GrassgodOCR/app/model/v_0.1/keys_v1.txt' 
-rec_dict_dir = '/root/algo/GrassgodOCR/app/model/v_0.1/keys_v1.txt'
+rec_dict_dir = '/dev/shm/GrassgodOCR/app/model/v_0.1/keys_v1.txt'
 
 
 # ocr_instances = [PaddleOCR(det_model_dir = det_dir,

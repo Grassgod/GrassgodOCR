@@ -13,7 +13,7 @@ def format_number(text):
 
 def extract_money(content):
     # 匹配数字部分（含错误格式）
-    match = re.search(r'-?\d{1,3}(?:[,.]\d{3})*(?:[,.]\d{2})?', content)
+    match = re.search(r'-?\d{1,3}(?:[,.]\d{3})*(?:[,.]\d{1,2})?', content)
     if not match:
         return None
     
@@ -24,10 +24,12 @@ def extract_money(content):
     cleaned = re.sub(r'[,.]', '', amount_str)
 
     # 还原最后一个小数点（如果有）
-    if '.' == amount_str[-3] or ',' == amount_str[-3]:
+    if '.' == amount_str[-3] or ',' == amount_str[-3] or '.' == amount_str[-2] or ',' == amount_str[-2]:
         last_dot_index = amount_str.rfind(r'[,.]')
-
-        cleaned = f"{cleaned[:last_dot_index-1]}.{cleaned[last_dot_index-1:]}"
+        if '.' == amount_str[-3] or ',' == amount_str[-3]:
+            cleaned = f"{cleaned[:last_dot_index-1]}.{cleaned[last_dot_index-1:]}"
+        else:
+            cleaned = f"{cleaned[:last_dot_index]}.{cleaned[last_dot_index:]}"
     
     # return float(cleaned) if '.' in cleaned else int(cleaned)
     return cleaned
@@ -110,71 +112,71 @@ def call_taxi(img_path, request_idx):
 
     search_key = {}
 
-    try:
-        count = 0
-        for i in ocr_result:
-            count += 1
-            position = i[0]
-            content = i[1][0]
-            score = i[1][1]
-            # print(position)
+    # try :
+    count = 0
+    for i in ocr_result:
+        count += 1
+        position = i[0]
+        content = i[1][0]
+        score = i[1][1]
+        # print(position)
 
-            # 找到x和y的最大最小
-            x = [i[0] for i in position]
-            y = [i[1] for i in position]
-            x_min = min(x) 
-            x_max = max(x)
-            y_min = min(y)
-            y_max = max(y)
-            # 确定x和y的最大最小
-            print(content,x_min, x_max, y_min, y_max)
-            search_key[count] = {
-                'x_min': x_min,
-                'x_max': x_max,
-                'y_min': y_min,
-                'y_max': y_max,
-                'content': content
-            }
-        # print(search_key)
-        req = []
-        for i in search_key:
-            if  ("滴滴" in search_key[i]['content'] or "特惠快车" in search_key[i]['content'] or "六座商务" in search_key[i]['content']) and ("滴滴旗下品牌" not in search_key[i]['content']):
-                print('===================')
-                print(search_key[i])
-                ans = {}
-                if search_key[i]['content'] == '惠特惠快车':
-                    ans["carType"] = '特惠快车'
-                else:
-                    ans["carType"] = search_key[i]['content']
-                base = search_key[i]
-                flag = 0
-                for j in search_key:
-                    compare = search_key[j]
-                    if compare['x_min']>base['x_max']:
-                        # 判断compare和base的y轴存在交叉
-                        if compare['y_min']<base['y_max'] and compare['y_max']>base['y_min']:
-                            # if '元' in compare['content']:
-                            if flag == 0:
-                                flag = 1
-                                print(j,search_key[j])
-                                ans['price'] = extract_money(compare['content'])
-                                min_dis = 100000
-                                min_key = ''
-                                for k in search_key:
-                                    compare2 = search_key[k]
-                                    if compare2['x_min']>base['x_max'] and compare2['y_min']-compare['y_max']>=-20 and compare2['y_min']-compare['y_max']<min_dis:
-                                        min_dis = compare2['y_min']-compare['y_max']
-                                        min_key = k
-                                        print('更新', compare2)
-                                if min_key != '' and '-' in search_key[min_key]['content']:
-                                    ans['discount'] = extract_discount(search_key[min_key]['content'])
-                                    print(search_key[min_key]['content'])
-                req.append(ans)
-    except Exception as e:
-        print('search error')
-        print(e)
-        req_data['status'] = 'unknownError'
-        return req_data
+        # 找到x和y的最大最小
+        x = [i[0] for i in position]
+        y = [i[1] for i in position]
+        x_min = min(x) 
+        x_max = max(x)
+        y_min = min(y)
+        y_max = max(y)
+        # 确定x和y的最大最小
+        print(content,x_min, x_max, y_min, y_max)
+        search_key[count] = {
+            'x_min': x_min,
+            'x_max': x_max,
+            'y_min': y_min,
+            'y_max': y_max,
+            'content': content
+        }
+    # print(search_key)
+    req = []
+    for i in search_key:
+        if  ("滴滴" in search_key[i]['content'] or "特惠快车" in search_key[i]['content'] or "六座商务" in search_key[i]['content']) and ("滴滴旗下品牌" not in search_key[i]['content']):
+            print('===================')
+            print(search_key[i])
+            ans = {}
+            if search_key[i]['content'] == '惠特惠快车':
+                ans["carType"] = '特惠快车'
+            else:
+                ans["carType"] = search_key[i]['content']
+            base = search_key[i]
+            flag = 0
+            for j in search_key:
+                compare = search_key[j]
+                if compare['x_min']>base['x_max']:
+                    # 判断compare和base的y轴存在交叉
+                    if compare['y_min']<base['y_max'] and compare['y_max']>base['y_min']:
+                        # if '元' in compare['content']:
+                        if flag == 0:
+                            flag = 1
+                            print(j,search_key[j])
+                            ans['price'] = extract_money(compare['content'])
+                            min_dis = 100000
+                            min_key = ''
+                            for k in search_key:
+                                compare2 = search_key[k]
+                                if compare2['x_min']>base['x_max'] and compare2['y_min']-compare['y_max']>=-20 and compare2['y_min']-compare['y_max']<min_dis:
+                                    min_dis = compare2['y_min']-compare['y_max']
+                                    min_key = k
+                                    print('更新', compare2)
+                            if min_key != '' and '-' in search_key[min_key]['content']:
+                                ans['discount'] = extract_discount(search_key[min_key]['content'])
+                                print(search_key[min_key]['content'])
+            req.append(ans)
+    # except Exception as e:
+    #     print('search error')
+    #     print(e)
+    #     req_data['status'] = 'unknownError'
+    #     return req_data
     req_data['cars'] = req 
     req_data['status'] = 'success'                
     return req_data

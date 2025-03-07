@@ -23,13 +23,16 @@ def extract_money(content):
     # 移除所有逗号和中间的小数点
     cleaned = re.sub(r'[,.]', '', amount_str)
 
+    # print(cleaned)
+
     # 还原最后一个小数点（如果有）
-    if '.' == amount_str[-3] or ',' == amount_str[-3] or '.' == amount_str[-2] or ',' == amount_str[-2]:
-        last_dot_index = amount_str.rfind(r'[,.]')
-        if '.' == amount_str[-3] or ',' == amount_str[-3]:
-            cleaned = f"{cleaned[:last_dot_index-1]}.{cleaned[last_dot_index-1:]}"
-        else:
-            cleaned = f"{cleaned[:last_dot_index]}.{cleaned[last_dot_index:]}"
+    if '.' in amount_str or ',' in amount_str:
+        if '.' == amount_str[-3] or ',' == amount_str[-3] or '.' == amount_str[-2] or ',' == amount_str[-2]:
+            last_dot_index = amount_str.rfind(r'[,.]')
+            if '.' == amount_str[-3] or ',' == amount_str[-3]:
+                cleaned = f"{cleaned[:last_dot_index-1]}.{cleaned[last_dot_index-1:]}"
+            else:
+                cleaned = f"{cleaned[:last_dot_index]}.{cleaned[last_dot_index:]}"
     
     # return float(cleaned) if '.' in cleaned else int(cleaned)
     return cleaned

@@ -18,6 +18,8 @@
 #    source ~/.bashrc  # 或 source ~/.zshrc
 #
 # 4. 验证cuDNN安装：
+#    python -c "import torch; print(torch.backends.cudnn.version())"
+#    # 或
 #    cat /usr/local/cuda-12.4/include/cudnn_version.h | grep CUDNN_MAJOR -A 2
 
 # =====================================================

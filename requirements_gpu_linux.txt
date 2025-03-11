@@ -1,23 +1,39 @@
-# CUDA 12.4环境依赖
-paddlepaddle-gpu==2.6.0.post120 # 支持CUDA 12
+# =====================================================
+# CUDA 12.4 环境依赖安装说明
+# =====================================================
+# 1. 确保已安装CUDA 12.4和对应版本cuDNN
+# 2. 创建并激活虚拟环境：
+#    python -m venv venv
+#    source venv/bin/activate
+# 3. 安装paddlepaddle-gpu（使用官方源）：
+#    python -m pip install paddlepaddle-gpu==2.6.2.post120 -i https://www.paddlepaddle.org.cn/packages/stable/cu120/
+# 4. 安装其他依赖：
+#    pip install -r requirements_gpu_linux.txt
 
-# 基础依赖
-Flask==3.0.2
-numpy==1.26.4
-Pillow==10.2.0
-requests==2.31.0
-opencv-python==4.9.0.80
+# =====================================================
+# 基础依赖包
+# =====================================================
+Flask==3.0.2                # Web框架
+Werkzeug==3.0.1            # WSGI工具包
+gunicorn==21.2.0           # WSGI服务器
+python-dotenv==1.0.1       # 环境变量管理
 
-# PaddleOCR依赖
-paddleocr==2.7.0.3
+# =====================================================
+# 图像处理相关
+# =====================================================
+numpy==1.26.4              # 数值计算
+Pillow==10.2.0            # 图像处理
+opencv-python==4.9.0.80    # OpenCV
+cupy-cuda12x==13.0.0       # CUDA加速计算
 
-# OpenAI相关
-openai==1.12.0
+# =====================================================
+# OCR相关
+# =====================================================
+# paddlepaddle-gpu 通过上述命令单独安装
+paddleocr==2.7.0.3         # OCR工具包
 
-# 其他工具包
-python-dotenv==1.0.1
-werkzeug==3.0.1
-gunicorn==21.2.0
-
-# CUDA相关依赖
-cupy-cuda12x==13.0.0  # CUDA工具包 
+# =====================================================
+# API相关
+# =====================================================
+requests==2.31.0           # HTTP客户端
+openai==1.12.0             # OpenAI API 

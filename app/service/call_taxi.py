@@ -9,7 +9,7 @@ from app.utils.log_config import setup_logger
 from app.config.config import Config
 
 # 设置日志记录器
-logger = setup_logger()
+logger = setup_logger('taxi_service')
 
 class TaxiService:
     def __init__(self):

@@ -11,7 +11,7 @@ from app.service.call_taxi import call_taxi_handler
 from app.utils.log_config import setup_logger
 
 # 设置日志记录器
-logger = setup_logger()
+logger = setup_logger('flask_app')
 
 # 创建flask应用
 app = Flask(__name__)
@@ -105,6 +105,8 @@ def call_didi():
         
         if result.get('status') != 'success':
             logger.error(f"Taxi service failed: {result}")
+            logger.error(f"Taxi service failed: {result.get('status', 'Unknown error')}")
+            logger.error(f"Taxi service img_path: {img_path}")
             return jsonify({
                 'status': 'error',
                 'message': result.get('status', 'Unknown error')

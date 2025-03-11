@@ -16,7 +16,7 @@ from app.utils.log_config import setup_logger
 from app.config.config import Config
 
 # 设置日志记录器
-logger = setup_logger()
+logger = setup_logger('ocr_service')
 
 
 class OCRService:
@@ -31,6 +31,7 @@ class OCRService:
             **Config.OCR_PARAMS
         )
         self.font_path = config['font_path']
+        self.logger = logger  # 使用类实例变量存储logger
         
     @staticmethod
     def download_image(img_url):

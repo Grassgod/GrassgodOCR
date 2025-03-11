@@ -2,14 +2,19 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-def setup_logger():
+def setup_logger(name='app'):
+    """设置日志记录器，确保只初始化一次"""
+    # 如果logger已经存在，直接返回
+    logger = logging.getLogger(name)
+    if logger.handlers:
+        return logger
+        
     # 创建日志目录
     log_dir = 'logs'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    # 创建主logger
-    logger = logging.getLogger('taxi_service')
+    # 设置日志级别
     logger.setLevel(logging.DEBUG)
 
     # 正常日志文件处理器
@@ -37,5 +42,8 @@ def setup_logger():
     # 添加处理器到logger
     logger.addHandler(info_handler)
     logger.addHandler(error_handler)
+
+    # 防止日志向上传递
+    logger.propagate = False
 
     return logger 

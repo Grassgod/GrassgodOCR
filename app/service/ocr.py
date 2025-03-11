@@ -36,33 +36,32 @@ class OCRService:
         try:
             if not paddle.device.is_compiled_with_cuda():
                 self.logger.warning("PaddlePaddle未编译CUDA支持，将使用CPU模式")
-                use_gpu = False
+                self.use_gpu = False
             else:
                 paddle.device.set_device('gpu')
                 # 设置GPU内存策略
                 paddle.device.cuda.set_memory_fraction(0.5)
-                use_gpu = True
+                self.use_gpu = True
                 self.logger.info(f"使用GPU设备: {paddle.device.get_device()}")
         except Exception as e:
             self.logger.warning(f"GPU初始化失败，将使用CPU模式: {str(e)}")
-            use_gpu = False
+            self.use_gpu = False
 
-        try:
-            # 初始化OCR引擎
-            self.ocr = PaddleOCR(
-                use_angle_cls=True,
-                use_gpu=use_gpu,
-                lang='ch',
-                show_log=False,
-                use_mp=True,  # 使用多进程
-                total_process_num=1,  # 限制进程数
-                enable_mkldnn=not use_gpu,  # CPU模式下启用mkldnn加速
-                cpu_threads=4 if not use_gpu else 1  # CPU模式下使用多线程
-            )
-            self.logger.info("OCR引擎初始化成功")
-        except Exception as e:
-            self.logger.error(f"OCR引擎初始化失败: {str(e)}")
-            raise
+        # try:
+        #     # 初始化OCR引擎
+        #     self.ocr = PaddleOCR(
+        #         use_angle_cls=True,
+        #         use_gpu=self.use_gpu,
+        #         lang='ch',
+        #         show_log=False,
+        #         use_mp=True,
+        #         total_process_num=1,
+        #         cpu_threads=4 if not self.use_gpu else 1
+        #     )
+        #     self.logger.info("OCR引擎初始化成功")
+        # except Exception as e:
+        #     self.logger.error(f"OCR引擎初始化失败: {str(e)}")
+        #     raise
 
     @staticmethod
     def download_image(img_url):
@@ -100,25 +99,43 @@ class OCRService:
 
             # 执行OCR识别
             with paddle.no_grad():  # 禁用梯度计算
-                result = self.ocr.ocr(img_array, cls=True)
+                ocr = PaddleOCR(
+                    use_angle_cls=True,
+                    use_gpu=self.use_gpu,
+                    lang='ch',
+                    show_log=False,
+                    use_mp=True,
+                    total_process_num=1,
+                    cpu_threads=4 if not self.use_gpu else 1
+                )
+                self.logger.info("OCR引擎初始化成功")
+                result = ocr.ocr(img_array, cls=True)
 
-            if not result or len(result) == 0:
+            if not result:
                 self.logger.warning("未检测到文本")
                 return []
 
             # 处理结果
-            processed_result = []
-            for line in result:
-                for item in line:
-                    text = item[1][0]  # 获取识别的文本
-                    confidence = float(item[1][1])  # 获取置信度
-                    if confidence > 0.5:  # 过滤低置信度的结果
-                        processed_result.append({
-                            'text': text,
-                            'confidence': confidence
-                        })
+            # processed_result = []
+            # try:
+            #     for line in result[0]:  # result[0]包含了所有检测到的文本行
+            #         if isinstance(line, (list, tuple)) and len(line) >= 2:
+            #             box = line[0]  # 文本框坐标
+            #             text_info = line[1]  # 文本信息和置信度
+            #             if isinstance(text_info, (list, tuple)) and len(text_info) >= 2:
+            #                 text = text_info[0]  # 文本内容
+            #                 confidence = float(text_info[1])  # 置信度
+            #                 if confidence > 0.5:  # 过滤低置信度的结果
+            #                     processed_result.append({
+            #                         'text': text,
+            #                         'confidence': confidence,
+            #                         'box': box
+            #                     })
+            # except Exception as e:
+            #     self.logger.error(f"处理OCR结果时出错: {str(e)}")
+            #     return []
 
-            return processed_result
+            return result
 
         except Exception as e:
             self.logger.error(f"OCR处理失败: {str(e)}")

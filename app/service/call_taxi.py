@@ -33,16 +33,13 @@ class TaxiService:
             amount_str = match.group(0)
             cleaned = re.sub(r'[,.，。]', '', amount_str)
 
-            if any(sep in amount_str for sep in ['.', ',', '，', '。']):
-                decimal_chars = ['.', ',', '，', '。']
-                for char in decimal_chars:
-                    if char == amount_str[-3] or char == amount_str[-2]:
-                        last_dot_index = max(amount_str.rfind(c) for c in decimal_chars if c in amount_str)
-                        if char == amount_str[-3]:
-                            cleaned = f"{cleaned[:last_dot_index-1]}.{cleaned[last_dot_index-1:]}"
-                        else:
-                            cleaned = f"{cleaned[:last_dot_index]}.{cleaned[last_dot_index:]}"
-                        break
+            if '.' in amount_str or ',' in amount_str or '，' in amount_str or '。' in amount_str:
+                if '.' == amount_str[-3] or ',' == amount_str[-3] or '.' == amount_str[-2] or ',' == amount_str[-2] or '，' == amount_str[-2] or '。' == amount_str[-2] or '，' == amount_str[-3] or '。' == amount_str[-3]:
+                    last_dot_index = amount_str.rfind(r'[,.，。]')
+                    if '.' == amount_str[-3] or ',' == amount_str[-3] or '，' == amount_str[-3] or '。' == amount_str[-3]:
+                        cleaned = f"{cleaned[:last_dot_index-1]}.{cleaned[last_dot_index-1:]}"
+                    else:
+                        cleaned = f"{cleaned[:last_dot_index]}.{cleaned[last_dot_index:]}"
 
             return cleaned
         except Exception as e:

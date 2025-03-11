@@ -1,10 +1,8 @@
 import os
 import sys
 from flask import Flask, request, jsonify
-from functools import wraps
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.service.ocr import ocr_handler
 from app.service.call_taxi import call_taxi_handler

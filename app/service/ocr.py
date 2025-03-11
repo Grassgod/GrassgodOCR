@@ -14,25 +14,56 @@ from paddleocr import PaddleOCR
 # import numpy as np
 from app.utils.log_config import setup_logger
 from app.config.config import Config
+import paddle
+import logging
 
 # 设置日志记录器
 logger = setup_logger('ocr_service')
 
+# 设置环境变量
+os.environ['FLAGS_call_stack_level'] = '2'
+os.environ['FLAGS_allocator_strategy'] = 'naive_best_fit'
+os.environ['FLAGS_fraction_of_gpu_memory_to_use'] = '0.5'
+os.environ['FLAGS_initial_gpu_memory_in_mb'] = '500'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 class OCRService:
     def __init__(self):
         """初始化OCR服务"""
-        config = Config.get_ocr_config()
-        self.ocr = PaddleOCR(
-            det_model_dir=config['det_dir'],
-            rec_model_dir=config['rec_dir'],
-            cls_model_dir=config['cls_dir'],
-            rec_char_dict_path=config['rec_dict_path'],
-            **Config.OCR_PARAMS
-        )
-        self.font_path = config['font_path']
-        self.logger = logger  # 使用类实例变量存储logger
+        self.logger = logging.getLogger(__name__)
         
+        # 检查CUDA是否可用
+        try:
+            if not paddle.device.is_compiled_with_cuda():
+                self.logger.warning("PaddlePaddle未编译CUDA支持，将使用CPU模式")
+                use_gpu = False
+            else:
+                paddle.device.set_device('gpu')
+                # 设置GPU内存策略
+                paddle.device.cuda.set_memory_fraction(0.5)
+                use_gpu = True
+                self.logger.info(f"使用GPU设备: {paddle.device.get_device()}")
+        except Exception as e:
+            self.logger.warning(f"GPU初始化失败，将使用CPU模式: {str(e)}")
+            use_gpu = False
+
+        try:
+            # 初始化OCR引擎
+            self.ocr = PaddleOCR(
+                use_angle_cls=True,
+                use_gpu=use_gpu,
+                lang='ch',
+                show_log=False,
+                use_mp=True,  # 使用多进程
+                total_process_num=1,  # 限制进程数
+                enable_mkldnn=not use_gpu,  # CPU模式下启用mkldnn加速
+                cpu_threads=4 if not use_gpu else 1  # CPU模式下使用多线程
+            )
+            self.logger.info("OCR引擎初始化成功")
+        except Exception as e:
+            self.logger.error(f"OCR引擎初始化失败: {str(e)}")
+            raise
+
     @staticmethod
     def download_image(img_url):
         """从URL下载图片并返回二进制数据"""
@@ -57,10 +88,40 @@ class OCRService:
     def process_image(self, img_array):
         """处理图像并返回OCR结果"""
         try:
-            result = self.ocr.ocr(img_array, cls=True)
-            return result
+            # 确保输入图像格式正确
+            if not isinstance(img_array, np.ndarray):
+                raise ValueError("输入必须是numpy数组")
+
+            # 图像预处理
+            if img_array.ndim == 2:  # 如果是灰度图
+                img_array = np.stack([img_array] * 3, axis=-1)
+            elif img_array.shape[2] == 4:  # 如果是RGBA
+                img_array = img_array[:, :, :3]
+
+            # 执行OCR识别
+            with paddle.no_grad():  # 禁用梯度计算
+                result = self.ocr.ocr(img_array, cls=True)
+
+            if not result or len(result) == 0:
+                self.logger.warning("未检测到文本")
+                return []
+
+            # 处理结果
+            processed_result = []
+            for line in result:
+                for item in line:
+                    text = item[1][0]  # 获取识别的文本
+                    confidence = float(item[1][1])  # 获取置信度
+                    if confidence > 0.5:  # 过滤低置信度的结果
+                        processed_result.append({
+                            'text': text,
+                            'confidence': confidence
+                        })
+
+            return processed_result
+
         except Exception as e:
-            logger.error(f"OCR processing failed: {str(e)}")
+            self.logger.error(f"OCR处理失败: {str(e)}")
             raise
 
     @staticmethod
@@ -115,6 +176,13 @@ class OCRService:
         except Exception as e:
             logger.error(f"OCR handling failed: {str(e)}")
             raise
+
+    def __del__(self):
+        """清理资源"""
+        try:
+            paddle.device.cuda.empty_cache()
+        except:
+            pass
 
 # 创建OCR服务实例
 ocr_service = OCRService()

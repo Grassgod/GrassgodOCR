@@ -197,8 +197,8 @@ class TaxiService:
                     'content': content
                 }
 
-                if "代驾" in content or "顺风车" in content:
-                    raise Exception("代驾或顺风车")
+                if "借钱" in content or "扫一扫" in content:
+                    raise Exception("出现借钱或扫一扫， 疑似首页")
                 
                 logger.info(f"OCR content: {content}, Position: x_min={min(x)}, x_max={max(x)}, y_min={min(y)}, y_max={max(y)}")
             

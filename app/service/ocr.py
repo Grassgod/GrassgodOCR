@@ -92,24 +92,26 @@ class OCRService:
                 raise ValueError("输入必须是numpy数组")
 
             # 图像预处理
-            if img_array.ndim == 2:  # 如果是灰度图
-                img_array = np.stack([img_array] * 3, axis=-1)
-            elif img_array.shape[2] == 4:  # 如果是RGBA
-                img_array = img_array[:, :, :3]
+            # if img_array.ndim == 2:  # 如果是灰度图
+            #     img_array = np.stack([img_array] * 3, axis=-1)
+            # elif img_array.shape[2] == 4:  # 如果是RGBA
+            #     img_array = img_array[:, :, :3]
 
             # 执行OCR识别
-            with paddle.no_grad():  # 禁用梯度计算
-                ocr = PaddleOCR(
-                    use_angle_cls=True,
-                    use_gpu=self.use_gpu,
-                    lang='ch',
-                    show_log=False,
-                    use_mp=True,
-                    total_process_num=1,
-                    cpu_threads=4 if not self.use_gpu else 1
-                )
-                self.logger.info("OCR引擎初始化成功")
-                result = ocr.ocr(img_array, cls=True)
+            # with paddle.no_grad():  # 禁用梯度计算
+            ocr = PaddleOCR(
+                use_angle_cls=True,
+                use_gpu=self.use_gpu,
+                lang='ch',
+                show_log=False,
+                use_mp=True,
+                total_process_num=1,
+                cpu_threads=4 if not self.use_gpu else 1,
+                box_thresh=0.3,
+                det_db_box_thresh=0.3,
+            )
+            self.logger.info("OCR引擎初始化成功")
+            result = ocr.ocr(img_array, cls=True)
 
             if not result:
                 self.logger.warning("未检测到文本")
